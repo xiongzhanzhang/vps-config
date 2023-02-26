@@ -20,7 +20,7 @@
 						{
 							"match": [{
 								"tls": {
-									"sni": ["hoh.xiongzhanzhang.xyz"]
+									"sni": ["doh.xiongzhanzhang.xyz"]
 								}
 							}],
 							"handle": [{
