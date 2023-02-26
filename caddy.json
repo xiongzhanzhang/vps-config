@@ -1,0 +1,193 @@
+{
+	"apps": {
+		"layer4": {
+			"servers": {
+				"sni": {
+					"listen": [":443"],
+					"routes": [{
+							"match": [{
+								"tls": {
+									"sni": ["www.xiongzhanzhang.xyz"]
+								}
+							}],
+							"handle": [{
+								"handler": "proxy",
+								"upstreams": [{
+									"dial": ["127.0.0.1:1443"]
+								}]
+							}]
+						},
+						{
+							"match": [{
+								"tls": {
+									"sni": ["hoh.xiongzhanzhang.xyz"]
+								}
+							}],
+							"handle": [{
+								"handler": "proxy",
+								"upstreams": [{
+									"dial": ["127.0.0.1:1443"]
+								}]
+							}]
+						},
+						{
+							"match": [{
+								"tls": {
+									"sni": ["nps.xiongzhanzhang.xyz"]
+								}
+							}],
+							"handle": [{
+								"handler": "proxy",
+								"upstreams": [{
+									"dial": ["127.0.0.1:1443"]
+								}]
+							}]
+						},
+						{
+							"match": [{
+								"tls": {
+									"sni": ["*.nas.xiongzhanzhang.xyz"]
+								}
+							}],
+							"handle": [{
+								"handler": "proxy",
+								"upstreams": [{
+									"dial": ["127.0.0.1:441"]
+								}]
+							}]
+						}
+					]
+				}
+			}
+		},
+		"http": {
+			"servers": {
+				"srv0": {
+					"listen": [":1443"],
+					"routes": [{
+						"match": [{
+							"host": ["www.xiongzhanzhang.xyz"]
+						}],
+						"handle": [{
+							"handler": "subroute",
+							"routes": [{
+								"handle": [{
+									"handler": "vars",
+									"root": "/root/share"
+								}]
+							}, {
+								"handle": [{
+									"handler": "reverse_proxy",
+									"upstreams": [{
+										"dial": "127.0.0.1:10000"
+									}]
+								}],
+								"match": [{
+									"path": ["/hello"]
+								}]
+							}, {
+								"handle": [{
+									"browse": {},
+									"handler": "file_server",
+									"hide": ["./Caddyfile"]
+								}]
+							}]
+						}],
+						"terminal": true
+					}, {
+						"match": [{
+							"host": ["nps.xiongzhanzhang.xyz"]
+						}],
+						"handle": [{
+							"handler": "subroute",
+							"routes": [{
+								"handle": [{
+									"handler": "reverse_proxy",
+									"upstreams": [{
+										"dial": "127.0.0.1:8080"
+									}]
+								}]
+							}]
+						}],
+						"terminal": true
+					}, {
+						"match": [{
+							"host": ["doh.xiongzhanzhang.xyz"]
+						}],
+						"handle": [{
+							"handler": "subroute",
+							"routes": [{
+								"handle": [{
+									"handler": "reverse_proxy",
+									"headers": {
+										"request": {
+											"set": {
+												"Host": ["{http.reverse_proxy.upstream.hostport}"]
+											}
+										},
+										"response": {
+											"set": {
+												"Access-Control-Allow-Headers": ["*"],
+												"Access-Control-Allow-Origin": ["*"]
+											}
+										}
+									},
+									"transport": {
+										"protocol": "http",
+										"tls": {}
+									},
+									"upstreams": [{
+										"dial": "dns.google:443"
+									}]
+								}],
+								"match": [{
+									"path": ["/dns-query"]
+								}]
+							}]
+						}],
+						"terminal": true
+					}],
+					"logs": {
+						"logger_names": {
+							"doh.xiongzhanzhang.xyz": "",
+							"nps.xiongzhanzhang.xyz": "",
+							"www.xiongzhanzhang.xyz": ""
+						}
+					}
+				},
+				"srv1": {
+					"listen": [":80"],
+					"routes": [{
+						"match": [{
+							"host": ["*.nas.xiongzhanzhang.xyz"]
+						}],
+						"handle": [{
+							"handler": "subroute",
+							"routes": [{
+								"handle": [{
+									"handler": "reverse_proxy",
+									"upstreams": [{
+										"dial": "127.0.0.1:81"
+									}]
+								}]
+							}]
+						}],
+						"terminal": true
+					}],
+					"logs": {
+						"logger_names": {
+							"*.nas.xiongzhanzhang.xyz": ""
+						}
+					}
+				}
+			}
+        },
+			"tls": {
+				"automation": {
+					"policies": [{
+						"subjects": ["www.xiongzhanzhang.xyz", "nps.xiongzhanzhang.xyz", "doh.xiongzhanzhang.xyz"]
+					}]
+				}
+			}
+		}
+}
