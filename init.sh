@@ -13,3 +13,7 @@ chmod +x ./caddy
 # install nps
 wget https://github.com/cnlh/nps/releases/download/v0.26.1/linux_amd64_server.tar.gz
 tar -zxvf linux_amd64_server.tar.gz
+
+# init log rotate
+sed -i "s@home@$HOME@g" ./vps_log.conf
+cp ./vps_log.conf /etc/logrotate.d

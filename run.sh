@@ -10,6 +10,7 @@ cp nps.conf ./conf/nps.conf
 
 mkdir -p ~/share
 mkdir -p ~/logs
+echo 12345678 > ~/share/share_data.txt
 
 ./caddy stop
 nohup ./caddy run --config ./caddy.json > ~/logs/caddy.log 2>&1 &
