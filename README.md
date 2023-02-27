@@ -18,9 +18,10 @@ vi run.sh
 sudo bash run.sh
 ```
 
-域名规划如下所示：
+域名规划如下所示，将下列域名映射到vps：
 - www.youdomian.com : 文件服务器
 - nps.youdomian.com : 内网穿透服务器
 - doh.youdomian.com : doh服务器
 - *.nas.youdomian.com : 内网服务预留的域名
+
 
